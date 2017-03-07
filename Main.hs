@@ -7,7 +7,7 @@ import Control.Applicative ((<|>))
 import Control.Arrow ((***))
 import Control.Concurrent (putMVar,takeMVar,forkIO,newEmptyMVar)
 import Control.Monad (when)
-import Data.Bits (Bits,popCount)
+import Data.Bits (Bits,popCount,shiftL)
 import Data.Bits.Bitwise (fromListLE)
 import Data.Array (Array,listArray,bounds,(!),indices)
 import Data.List (find,delete,sortOn,unfoldr,(\\),sort,foldl',minimumBy)
@@ -280,11 +280,11 @@ parseArgs ("--dry":args) = parseArgs args >> return Nothing
 parseArgs ("--items":items:"--target":target:args) = return (Just (read target, sort (read items)))
 parseArgs ("--target":target:"--items":items:args) = return (Just (read target, sort (read items)))
 
-data CNF = CNF Int [(Bool,Int,Bool,Int,Bool,Int)] deriving Show
+data CNF = CNF Int [[(Bool,Int)]] deriving Show
 
 cnf :: [[String]] -> CNF
 cnf (["p","cnf",vars,_]:xs) = CNF (read vars) (map parse $ (map (map read) xs)) where
-  parse [a,b,c,0] = (a >= 0, abs a, b >= 0, abs b, c >= 0, abs c)
+  parse [a,b,c,0] = [(a >= 0, abs a), (b >= 0, abs b), (c >= 0, abs c)]
 
 readCNF :: FilePath -> IO CNF
 readCNF path = do
@@ -296,8 +296,14 @@ readCNF path = do
   return $ cnf ls
 
 cnfToSubsetSum :: CNF -> (Integer,[Integer])
-cnfToSubsetSum (CNF vars clauses) = (0,xy)
-  where xy = map () [0..length clauses - 1]
+cnfToSubsetSum (CNF vars clauses) = (s,xy++vs)
+  where s = (sum v1) + (sum $ map ((shiftL 4).(3*)) [0..n])
+        vs = zipWith (+) v1 v2 ++ zipWith (+) v1 v3
+        v1 = map ((shiftL 1).(3*n+).(3*)) [1..vars]
+        v2 = map (\x -> sum $ zipWith shiftL (map (toInteger . popCount . elem (True,x)) clauses) (map (*3) [0..])) [1..vars]
+        v3 = map (\x -> sum $ zipWith shiftL (map (toInteger . popCount . elem (False,x)) clauses) (map (*3) [0..])) [1..vars]
+        n = length clauses - 1
+        xy = concatMap (\x -> let y = shiftL 1 (3*x) in [y,2*y]) [0..n]
 
 main :: IO ()
 main = do
