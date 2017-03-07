@@ -274,6 +274,7 @@ showAverage = maybe (return Nothing) (\p -> f p >> return (Just p)) where
 parseArgs :: [String] -> IO (Maybe (Integer,[Integer]))
 parseArgs [] = readProblem >>= return . Just
 parseArgs [path] = readProblemFromFile path >>= return . Just
+parseArgs ("--cnf":file:args) = readCNF file >>= return . Just . cnfToSubsetSum
 parseArgs ("--show":"bounds":args) = parseArgs args >>= showBounds
 parseArgs ("--show":"average":args) = parseArgs args >>= showAverage
 parseArgs ("--dry":args) = parseArgs args >> return Nothing
