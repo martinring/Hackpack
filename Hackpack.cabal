@@ -1,0 +1,15 @@
+name:                Hackpack
+version:             0.1.0.0
+synopsis:            Subset Sum Solver
+license:             MIT
+license-file:        LICENSE
+author:              Martin Ring
+maintainer:          martin.ring@dfki.de
+category:            Math
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable Hackpack
+  main-is:             Main.hs
+  build-depends:       base, array, containers, bitwise
+  default-language:    Haskell2010
