@@ -1,0 +1,5 @@
+flags: {}
+packages:
+- '.'
+extra-deps: [bitwise-0.1.1.1]
+resolver: lts-8.4
